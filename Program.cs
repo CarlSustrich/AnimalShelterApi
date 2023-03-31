@@ -47,12 +47,11 @@ public class Program
                     );
 
     builder.Services.AddMvc();
-    builder.Services.AddControllers();
     builder.Services.AddRazorPages();
 
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();
-    builder.Services.AddAuthentication();
+    // builder.Services.AddAuthentication();
  
     var app = builder.Build();
     

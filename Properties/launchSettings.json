@@ -9,7 +9,7 @@
     }
   },
   "profiles": {
-    "MessageBoardApi": {
+    "AnimalShelter": {
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": true,
