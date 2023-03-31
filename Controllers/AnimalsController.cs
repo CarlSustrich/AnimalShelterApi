@@ -18,9 +18,38 @@ namespace AnimalShelter.Controllers
 
     //read all
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Animal>>> Get()
+    public async Task<ActionResult<IEnumerable<Animal>>> Get(string name, string species, string breed, string shelterId)
     {
-      return await _db.Animals.ToListAsync();
+      IQueryable<Animal> query = _db.Animals.AsQueryable();
+
+      if (name != null)
+      {
+        query = query.Where(entry => entry.AnimalName == name);
+      }
+
+      if (species != null)
+      {
+        query = query.Where(entry => entry.Species.Contains(species));
+      }
+
+      if (breed != null)
+      {
+        query = query.Where(entry => entry.Breed == breed);
+      }
+
+      if (shelterId != null)
+      {
+        if (Int32.TryParse(shelterId, out int id))
+        {
+          query = query.Where(entry => entry.ShelterId == id);
+        }
+        else
+        {
+          return BadRequest("ShelterId search method only accepts numbers");
+        }
+      }
+
+      return await query.ToListAsync();
     }
 
     //read single
