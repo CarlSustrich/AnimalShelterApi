@@ -27,7 +27,9 @@ namespace AnimalShelter.Controllers
     [HttpGet("{id}")]
     public async Task<ActionResult<Animal>> GetAnimal(int id)
     {
-      Animal targetAnimal = await _db.Animals.FindAsync(id);
+      Animal targetAnimal = await _db.Animals
+        .Include(entry=>entry.Shelter)
+        .FirstAsync(entry => entry.AnimalId == id);
 
       if (targetAnimal == null)
       {

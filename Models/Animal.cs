@@ -8,5 +8,6 @@ namespace AnimalShelter.Models
         public string Breed {get;set;}
         public DateTime DateAcquired {get;set;}
         public int ShelterId {get;set;}
+        public Shelter Shelter {get;set;}
     }
 }
