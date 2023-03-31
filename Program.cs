@@ -61,6 +61,8 @@ public class Program
           IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
         };
       });
+      builder.Services.AddMvc();
+      builder.Services.AddRazorPages();
  
     var app = builder.Build();
     
@@ -77,9 +79,15 @@ public class Program
                 // app.UseHsts();
                 app.UseHttpsRedirection();
             }
+    app.UseStaticFiles();
+    app.UseRouting();
+    app.UseAuthentication();
     app.UseAuthorization();
-    app.MapControllers();
-    
+    app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+                endpoints.MapRazorPages();
+            });    
     app.Run();
   }
 }
