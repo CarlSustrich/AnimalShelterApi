@@ -67,19 +67,10 @@ An API serving as a data management system for an imaginary animal shelter, incl
 
 ## Available Endpoints
 
-Routes preceded with a * require a bearer token be attached to the request as a header. This token my be received logging in. 
-
 *Login:
 ```
 POST http://localhost:7201/api/logins
 ```
-Body:
-```json
-    {
-      "userName": "athena_admin",
-      "password": "1"
-    }
-    ```
 
 *Shelters:
 ```
