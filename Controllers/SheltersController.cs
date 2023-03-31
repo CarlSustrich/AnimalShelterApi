@@ -5,7 +5,7 @@ using AnimalShelter.Models;
 namespace AnimalShelter.Controllers
 {
 
-[Route("api/[controller]")]
+  [Route("api/[controller]")]
   [ApiController]
   public class SheltersController : ControllerBase
   {
