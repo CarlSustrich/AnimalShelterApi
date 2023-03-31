@@ -1,12 +1,14 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using AnimalShelter.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace AnimalShelter.Controllers
 {
 
   [Route("api/[controller]")]
   [ApiController]
+  [Authorize]
   public class AnimalsController : ControllerBase
   {
     private readonly AnimalShelterContext _db;
@@ -17,6 +19,7 @@ namespace AnimalShelter.Controllers
     }
 
     //read all
+    [AllowAnonymous]
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Animal>>> Get(string name, string species, string breed, string shelterId)
     {
@@ -53,6 +56,7 @@ namespace AnimalShelter.Controllers
     }
 
     //read single
+    [AllowAnonymous]
     [HttpGet("{id}")]
     public async Task<ActionResult<Animal>> GetAnimal(int id)
     {

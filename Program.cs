@@ -77,7 +77,7 @@ public class Program
                 // app.UseHsts();
                 app.UseHttpsRedirection();
             }
-
+    app.UseAuthorization();
     app.MapControllers();
     
     app.Run();
