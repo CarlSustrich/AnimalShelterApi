@@ -11,68 +11,66 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+namespace AnimalShelter.Controllers;
 
-namespace AnimalShelter.Controllers
+[Route("api/[controller]")]
+[ApiController]
+public class LoginsController : ControllerBase
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class LoginsController : ControllerBase
+    private IConfiguration _config;
+    private readonly AnimalShelterContext _db;
+
+    public LoginsController(IConfiguration config, AnimalShelterContext db)
     {
-        private IConfiguration _config;
-        private readonly AnimalShelterContext _db;
+        _db = db;
+        _config = config;
+    }
+    
+    [AllowAnonymous]
+    [HttpPost]
+    public IActionResult Login([FromBody] UserLogin userLogin)
+    {
+        var user = Authenticate(userLogin);
 
-        public LoginsController(IConfiguration config, AnimalShelterContext db)
+        if (user != null)
         {
-            _db = db;
-            _config = config;
-        }
-        
-        [AllowAnonymous]
-        [HttpPost]
-        public IActionResult Login([FromBody] UserLogin userLogin)
-        {
-            var user = Authenticate(userLogin);
-
-            if (user != null)
-            {
-                var token = Generate(user);
-                return Ok(token);
-            }
-
-            return NotFound("User not found");
+            var token = Generate(user);
+            return Ok(token);
         }
 
-        private string Generate(User user)
+        return NotFound("User not found");
+    }
+
+    private string Generate(User user)
+    {
+        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
+        var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+        var claims = new[]
         {
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
-            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+            new Claim(ClaimTypes.NameIdentifier, user.UserName),
+            new Claim(ClaimTypes.Email, user.EmailAddress),
+            new Claim(ClaimTypes.Role, user.Role)
+        };
 
-            var claims = new[]
-            {
-                new Claim(ClaimTypes.NameIdentifier, user.UserName),
-                new Claim(ClaimTypes.Email, user.EmailAddress),
-                new Claim(ClaimTypes.Role, user.Role)
-            };
+        var token = new JwtSecurityToken(_config["Jwt:Issuer"],
+            _config["Jwt:Audience"],
+            claims,
+            expires: DateTime.Now.AddMinutes(60),
+            signingCredentials: credentials);
 
-            var token = new JwtSecurityToken(_config["Jwt:Issuer"],
-              _config["Jwt:Audience"],
-              claims,
-              expires: DateTime.Now.AddMinutes(60),
-              signingCredentials: credentials);
+        return new JwtSecurityTokenHandler().WriteToken(token);
+    }
 
-            return new JwtSecurityTokenHandler().WriteToken(token);
+    private User Authenticate(UserLogin userLogin)
+    {
+        User currentUser = _db.Users.FirstOrDefault(o => o.UserName.ToLower() == userLogin.UserName.ToLower() && o.Password == userLogin.Password);
+
+        if (currentUser != null)
+        {
+            return currentUser;
         }
 
-        private User Authenticate(UserLogin userLogin)
-        {
-            User currentUser = _db.Users.FirstOrDefault(o => o.UserName.ToLower() == userLogin.UserName.ToLower() && o.Password == userLogin.Password);
-
-            if (currentUser != null)
-            {
-                return currentUser;
-            }
-
-            return null;
-        }
+        return null;
     }
 }

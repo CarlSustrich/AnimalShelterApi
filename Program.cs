@@ -23,8 +23,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-
-
 namespace AnimalShelter;
 
 public class Program
@@ -62,7 +60,7 @@ public class Program
         };
       });
       builder.Services.AddMvc();
-      builder.Services.AddRazorPages();
+      // builder.Services.AddRazorPages();
  
     var app = builder.Build();
     
@@ -86,7 +84,7 @@ public class Program
     app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
-                endpoints.MapRazorPages();
+                // endpoints.MapRazorPages();
             });    
     app.Run();
   }

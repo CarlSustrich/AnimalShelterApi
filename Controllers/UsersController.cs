@@ -3,72 +3,68 @@ using Microsoft.EntityFrameworkCore;
 using AnimalShelter.Models;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
+namespace AnimalShelter.Controllers;
 
-
-namespace AnimalShelter.Controllers
+[Route("api/[controller]")]
+[ApiController]
+public class UsersController : ControllerBase
 {
-  [Route("api/[controller]")]
-  [ApiController]
-  public class UsersController : ControllerBase
+  private readonly AnimalShelterContext _db;
+
+  public UsersController(AnimalShelterContext db)
   {
-    private readonly AnimalShelterContext _db;
+    _db = db;
+  }
 
-    public UsersController(AnimalShelterContext db)
+  [HttpGet("Admins")]
+  [Authorize(Roles = "Administrator")]
+  public IActionResult AdminsEndpoint()
+  {
+    User currentUser = GetCurrentUser();
+    return Ok($"Hi {currentUser.FirstName}, you are a(n) {currentUser.Role}");
+  }
+
+  private User GetCurrentUser()
+  {
+    var identity = HttpContext.User.Identity as ClaimsIdentity;
+
+    if (identity != null)
     {
-      _db = db;
-    }
+      var userClaims = identity.Claims;
 
-    [HttpGet("Admins")]
-    [Authorize(Roles = "Administrator")]
-    public IActionResult AdminsEndpoint()
-    {
-      User currentUser = GetCurrentUser();
-      return Ok($"Hi {currentUser.FirstName}, you are a(n) {currentUser.Role}");
-    }
-
-    private User GetCurrentUser()
-    {
-      var identity = HttpContext.User.Identity as ClaimsIdentity;
-
-      if (identity != null)
+      return new User
       {
-        var userClaims = identity.Claims;
+        UserName = userClaims.FirstOrDefault(o => o.Type == ClaimTypes.NameIdentifier)?.Value,
+        EmailAddress = userClaims.FirstOrDefault(o => o.Type == ClaimTypes.Email)?.Value,
+        Role = userClaims.FirstOrDefault(o => o.Type == ClaimTypes.Role)?.Value
+      };
+    }
+    return null;
+  }
 
-        return new User
-        {
-          UserName = userClaims.FirstOrDefault(o => o.Type == ClaimTypes.NameIdentifier)?.Value,
-          EmailAddress = userClaims.FirstOrDefault(o => o.Type == ClaimTypes.Email)?.Value,
-          Role = userClaims.FirstOrDefault(o => o.Type == ClaimTypes.Role)?.Value
-        };
+  [HttpGet]
+  public async Task<ActionResult<IEnumerable<User>>> Get()
+  {
+      return await _db.Users.ToListAsync();
+  }
+
+  [HttpGet("{id}")]
+  public async Task<ActionResult<User>> GetUser(int id)
+  {
+      User user = await _db.Users.FindAsync(id);
+      if (user == null)
+      {
+          return NotFound();
       }
-      return null;
-    }
+      return user;
+  }
 
-    [HttpGet]
-    public async Task<ActionResult<IEnumerable<User>>> Get()
-    {
-        return await _db.Users.ToListAsync();
-    }
-
-    [HttpGet("{id}")]
-    public async Task<ActionResult<User>> GetUser(int id)
-    {
-        User user = await _db.Users.FindAsync(id);
-        if (user == null)
-        {
-            return NotFound();
-        }
-        return user;
-    }
-
-    [HttpPost]
-    public async Task<ActionResult<User>> Post(User user)
-    {
-        _db.Users.Add(user);
-        await _db.SaveChangesAsync();
-        return CreatedAtAction(nameof(GetUser), new {id = user.UserId}, user);
-    }
-
+  [HttpPost]
+  public async Task<ActionResult<User>> Post(User user)
+  {
+      _db.Users.Add(user);
+      await _db.SaveChangesAsync();
+      return CreatedAtAction(nameof(GetUser), new {id = user.UserId}, user);
   }
 
 }

@@ -2,98 +2,95 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using AnimalShelter.Models;
 using Microsoft.AspNetCore.Authorization;
+namespace AnimalShelter.Controllers;
 
-namespace AnimalShelter.Controllers
+[Route("api/[controller]")]
+[ApiController]
+[Authorize]
+public class SheltersController : ControllerBase
 {
+  private readonly AnimalShelterContext _db;
 
-  [Route("api/[controller]")]
-  [ApiController]
-  [Authorize]
-  public class SheltersController : ControllerBase
+  public SheltersController(AnimalShelterContext db)
   {
-    private readonly AnimalShelterContext _db;
+    _db = db;
+  }
 
-    public SheltersController(AnimalShelterContext db)
+  //read all
+  [AllowAnonymous]
+  [HttpGet]
+  public async Task<ActionResult<IEnumerable<Shelter>>> Get()
+  {
+    return await _db.Shelters.ToListAsync();
+  }
+
+  //read single
+  [AllowAnonymous]
+  [HttpGet("{id}")]
+  public async Task<ActionResult<Shelter>> GetShelter(int id)
+  {
+    Shelter targetShelter = await _db.Shelters.FindAsync(id);
+
+    if (targetShelter == null)
     {
-      _db = db;
+      return NotFound();
     }
 
-    //read all
-    [AllowAnonymous]
-    [HttpGet]
-    public async Task<ActionResult<IEnumerable<Shelter>>> Get()
+    return targetShelter;
+  }
+
+  //create
+  [HttpPost]
+  public async Task<ActionResult<Shelter>> Post(Shelter newShelter)
+  {
+    _db.Shelters.Add(newShelter);
+    await _db.SaveChangesAsync();
+    return CreatedAtAction(nameof(GetShelter), new { id = newShelter.ShelterId }, newShelter);
+  }
+
+  //update
+  [HttpPut("{id}")]
+  public async Task<IActionResult> Put(int id, Shelter shelter)
+  {
+    if (id != shelter.ShelterId)
     {
-      return await _db.Shelters.ToListAsync();
+      return BadRequest("Id must match");
     }
 
-    //read single
-    [AllowAnonymous]
-    [HttpGet("{id}")]
-    public async Task<ActionResult<Shelter>> GetShelter(int id)
-    {
-      Shelter targetShelter = await _db.Shelters.FindAsync(id);
+    _db.Shelters.Update(shelter);
 
-      if (targetShelter == null)
+    try
+    {
+      await _db.SaveChangesAsync();
+    }
+
+    catch (DbUpdateConcurrencyException)
+    {
+      if (!_db.Shelters.Any(entry => entry.ShelterId == id))
       {
         return NotFound();
       }
-
-      return targetShelter;
+      else
+      {
+        throw;
+      }
     }
+    return NoContent();
+  }
 
-    //create
-    [HttpPost]
-    public async Task<ActionResult<Shelter>> Post(Shelter newShelter)
+  //delete
+  [HttpDelete("{id}")]
+  public async Task<IActionResult> DeleteShelter(int id)
+  {
+    Shelter shelter = await _db.Shelters.FindAsync(id);
+    if (shelter == null)
     {
-      _db.Shelters.Add(newShelter);
-      await _db.SaveChangesAsync();
-      return CreatedAtAction(nameof(GetShelter), new { id = newShelter.ShelterId }, newShelter);
+      return NotFound();
     }
 
-    //update
-    [HttpPut("{id}")]
-    public async Task<IActionResult> Put(int id, Shelter shelter)
-    {
-      if (id != shelter.ShelterId)
-      {
-        return BadRequest("Id must match");
-      }
+    _db.Shelters.Remove(shelter);
+    await _db.SaveChangesAsync();
 
-      _db.Shelters.Update(shelter);
-
-      try
-      {
-        await _db.SaveChangesAsync();
-      }
-
-      catch (DbUpdateConcurrencyException)
-      {
-        if (!_db.Shelters.Any(entry => entry.ShelterId == id))
-        {
-          return NotFound();
-        }
-        else
-        {
-          throw;
-        }
-      }
-      return NoContent();
-    }
-
-    //delete
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteShelter(int id)
-    {
-      Shelter shelter = await _db.Shelters.FindAsync(id);
-      if (shelter == null)
-      {
-        return NotFound();
-      }
-
-      _db.Shelters.Remove(shelter);
-      await _db.SaveChangesAsync();
-
-      return NoContent();
-    }
+    return NoContent();
   }
 }
