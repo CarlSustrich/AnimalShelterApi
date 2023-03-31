@@ -36,6 +36,8 @@ public class Program
     // Add services to the container.
 
     builder.Services.AddControllers();
+    builder.Services.AddEndpointsApiExplorer();
+    builder.Services.AddSwaggerGen();
 
     builder.Services.AddDbContext<AnimalShelterContext>(
                       dbContextOptions => dbContextOptions
@@ -46,11 +48,6 @@ public class Program
                       )
                     );
 
-    builder.Services.AddMvc();
-    builder.Services.AddRazorPages();
-
-    builder.Services.AddEndpointsApiExplorer();
-    builder.Services.AddSwaggerGen();
     // builder.Services.AddAuthentication();
  
     var app = builder.Build();
@@ -68,6 +65,8 @@ public class Program
                 // app.UseHsts();
                 app.UseHttpsRedirection();
             }
+
+    app.MapControllers();
     
     app.Run();
   }
