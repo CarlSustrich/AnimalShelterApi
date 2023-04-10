@@ -41,7 +41,7 @@ An API serving as a data management system for an imaginary animal shelter, incl
         "Audience": "http://localhost:47185"
       },
       "ConnectionStrings": {
-        "DefaultConnection": "Server=localhost;Port=3306;database=animalshelterapi;uid=root;pwd=epicodus;"
+        "DefaultConnection": "Server=localhost;Port=3306;database=[DATABASE NAME];uid=[USERNAME];pwd=[PASSWORD];"
       }
     }
     ```
@@ -148,6 +148,22 @@ When making a PUT request, you need to include a **body** that includes the entr
   "location": "123 Updated St"
 }
 ```
+
+## Instructions for use
+
+Read privilege is accessible to all users. To access any Create, Update or Destroy pathways, a user must log in to authenticate themselves. Currently the program is only set up to use a seeded user log in, not accept new registrations.
+
+To log in:
+* Send a post request to the log in endpoint specified above, containing the following JSON format message body:
+```json
+{
+    "username": "athena_admin",
+    "password": "1"
+}
+```
+
+* This method will return a bearer token. To access Create, Update or Destroy pathways, this bearer token will need to be attached to your request as a header. If using Postman, select the authorization tab for your request, then from the dropdown, choose "Bearer Token". The token you recieved from logging in should be entered here. 
+* Each token is valid for 60 minutes from the time recieved. 
 
 ## Known Bugs
 
